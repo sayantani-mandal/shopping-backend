@@ -1,5 +1,6 @@
 const express = require("express");
 const { Product, validate } = require("../models/product");
+const adminAuth = require("../middleware/adminAuth");
 const { Category } = require("../models/category");
 const Brand = require("../models/brand");
 const mkdirp = require("mkdirp");
@@ -44,7 +45,7 @@ const upload = multer({
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+router.post("/", adminAuth, async (req, res) => {
   try {
     let products = new Product({ ...req.body });
     const result = validate(req.body);
@@ -73,6 +74,7 @@ router.post("/", async (req, res) => {
 router.post(
   "/proImages/:id",
   upload.array("proImages", 5),
+  adminAuth,
   async (req, res) => {
     try {
       let pro = await Product.findById(req.params.id);
@@ -91,7 +93,7 @@ router.post(
   }
 );
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", adminAuth, async (req, res) => {
   try {
     const pro = await Product.findByIdAndDelete(req.params.id);
     res.send(pro);
@@ -100,7 +102,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", adminAuth, async (req, res) => {
   try {
     //const products = await Product.find().populate("categories");
     const products = await Product.find().populate({
@@ -118,9 +120,8 @@ router.get("/", async (req, res) => {
 router.put("/edit/:id", async (req, res) => {
   try {
     console.log(req.params.id);
-    const pro = await Product.findByIdAndUpdate(req.params.id, {
-      $set: req.body,
-    });
+    let pro = await Product.findByIdAndUpdate({ _id: req.params.id }, req.body);
+    pro = await Product.findOne({ _id: req.params.id });
     res.send(pro);
   } catch (e) {
     res.status(400).send(e);

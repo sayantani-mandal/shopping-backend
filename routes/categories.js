@@ -44,8 +44,9 @@ const upload = multer({
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+router.post("/", adminAuth, async (req, res) => {
   try {
+    console.log(abcd);
     let cat = new Category({ ...req.body });
 
     const { error } = checkBrand(req.body.brandIds);
@@ -91,7 +92,7 @@ router.post("/catImage", upload.single("catImage"), async (req, res) => {
   }
 });
 
-router.post("/addBrand/:id", async (req, res) => {
+router.post("/addBrand/:id", adminAuth, async (req, res) => {
   try {
     const { error } = checkBrand(req.body);
     if (error) return res.status(400).send({ Error: error.details[0].message });
@@ -121,7 +122,7 @@ router.post("/addBrand/:id", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", adminAuth, async (req, res) => {
   try {
     const categories = await Category.find().populate("brands");
     res.send(categories);
@@ -130,9 +131,38 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", adminAuth, async (req, res) => {
   try {
     const cat = await Category.findByIdAndDelete(req.params.id);
+    res.send(cat);
+  } catch (e) {
+    res.status(400).send(e);
+  }
+});
+
+// router.post("/edits/:id", async (req, res) => {
+//   try {
+//     console.log(abcd);
+//     console.log(req.params.id);
+//     // let cat = req.body;
+//     // console.log(req.params.id);
+//     // let category = await Category.findById(req.params.id);
+//     // if (!category) {
+//     //   return res.status(400).send({ Error: "Invalid Category Id provided" });
+//     // }
+//     // category.update(cat);
+//     // res.send(cat);
+//   } catch (e) {
+//     res.status(402).send(e);
+//   }
+// });
+router.put("/edit/:id", async (req, res) => {
+  try {
+    let cat = await Category.findByIdAndUpdate(
+      { _id: req.params.id },
+      req.body
+    );
+    cat = await Category.findOne({ _id: req.params.id });
     res.send(cat);
   } catch (e) {
     res.status(400).send(e);

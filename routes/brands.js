@@ -42,7 +42,7 @@ const upload = multer({
 
 const router = express.Router();
 
-router.post("/", upload.single("brandImage"), async (req, res) => {
+router.post("/", upload.single("brandImage"), adminAuth, async (req, res) => {
   try {
     // let brand = new Brand ({ ...req.body});
     let brand = new Brand({
@@ -68,7 +68,7 @@ router.post("/", upload.single("brandImage"), async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", adminAuth, async (req, res) => {
   try {
     const brands = await Brand.find();
     res.send(brands);
@@ -77,7 +77,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", adminAuth, async (req, res) => {
   try {
     const brand = await Brand.findByIdAndDelete(req.params.id);
     res.send(brand);
@@ -85,5 +85,32 @@ router.get("/:id", async (req, res) => {
     res.status(400).send(e);
   }
 });
+
+router.put("/edit/:id", async (req, res) => {
+  try {
+    let brand = await Brand.findByIdAndUpdate({ _id: req.params.id }, req.body);
+    brand = await Brand.findOne({ _id: req.params.id });
+    res.send(brand);
+  } catch (e) {
+    res.status(400).send(e);
+  }
+});
+
+// router.post("/searchBrand", async (req, res) => {
+//   try {
+//     const search = new RegExp(req.query.search);
+//     console.log(search);
+//     const result = await Brand.find({ brandName: search });
+//     console.log(result);
+
+//     if (result.length == 0) {
+//       res.status(400).send({ Error: "No data found..." });
+//     } else {
+//       res.send(result);
+//     }
+//   } catch (e) {
+//     res.status(400).send(e);
+//   }
+// });
 
 module.exports = router;
