@@ -131,6 +131,15 @@ router.get("/", adminAuth, async (req, res) => {
   }
 });
 
+router.get("/user", async (req, res) => {
+  try {
+    const categories = await Category.find().populate("brands");
+    res.send(categories);
+  } catch (e) {
+    res.status(400).send(e);
+  }
+});
+
 router.get("/:id", adminAuth, async (req, res) => {
   try {
     const cat = await Category.findByIdAndDelete(req.params.id);

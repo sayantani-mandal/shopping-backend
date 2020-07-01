@@ -93,14 +93,14 @@ router.post(
   }
 );
 
-router.get("/:id", adminAuth, async (req, res) => {
-  try {
-    const pro = await Product.findByIdAndDelete(req.params.id);
-    res.send(pro);
-  } catch (e) {
-    res.status(400).send(e);
-  }
-});
+// router.get("/:id", async (req, res) => {
+//   try {
+//     const pro = await Product.findByIdAndDelete(req.params.id);
+//     res.send(pro);
+//   } catch (e) {
+//     res.status(400).send(e);
+//   }
+// });
 
 router.get("/", adminAuth, async (req, res) => {
   try {
@@ -112,6 +112,31 @@ router.get("/", adminAuth, async (req, res) => {
       },
     });
     res.send(products);
+  } catch (e) {
+    res.status(400).send(e);
+  }
+});
+
+router.get("/user", async (req, res) => {
+  try {
+    //const products = await Product.find().populate("categories");
+    const products = await Product.find().populate({
+      path: "categories",
+      populate: {
+        path: "brands",
+      },
+    });
+    res.send(products);
+  } catch (e) {
+    res.status(400).send(e);
+  }
+});
+
+router.get("/user/:id", async (req, res) => {
+  try {
+    let pro = await Product.findById(req.params.id);
+    console.log(pro);
+    res.send(pro);
   } catch (e) {
     res.status(400).send(e);
   }

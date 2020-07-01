@@ -77,6 +77,15 @@ router.get("/", adminAuth, async (req, res) => {
   }
 });
 
+router.get("/user", async (req, res) => {
+  try {
+    const brands = await Brand.find();
+    res.send(brands);
+  } catch (e) {
+    res.status(400).send(e);
+  }
+});
+
 router.get("/:id", adminAuth, async (req, res) => {
   try {
     const brand = await Brand.findByIdAndDelete(req.params.id);
