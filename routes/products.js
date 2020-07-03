@@ -1,6 +1,7 @@
 const express = require("express");
 const { Product, validate } = require("../models/product");
 const adminAuth = require("../middleware/adminAuth");
+const auth = require("../middleware/auth");
 const { Category } = require("../models/category");
 const Brand = require("../models/brand");
 const mkdirp = require("mkdirp");
@@ -117,7 +118,7 @@ router.get("/", adminAuth, async (req, res) => {
   }
 });
 
-router.get("/user", async (req, res) => {
+router.get("/user", auth, async (req, res) => {
   try {
     //const products = await Product.find().populate("categories");
     const products = await Product.find().populate({
@@ -131,6 +132,94 @@ router.get("/user", async (req, res) => {
     res.status(400).send(e);
   }
 });
+
+router.get("/user/getAllProducts", async (req, res) => {
+  //try {
+  let filter = {
+    price: {
+      $lte: 9999999999,
+      $gte: 0,
+    },
+  };
+
+  if (!isNaN(req.query.max)) {
+    filter.price["$lte"] = req.query.max;
+  }
+  if (req.query.categoryId) {
+    filter.categoryId = req.query.categoryId;
+  }
+  if (!isNaN(req.query.min)) {
+    filter.price["$gte"] = req.query.min;
+  }
+
+  console.log(req.query.min);
+  console.log(filter);
+
+  let pro = Product.find(filter);
+  pro
+    .populate("categories")
+    // .select('_id name price')
+    .exec()
+    .then((products) => {
+      const response = {
+        count: products.length,
+        products: products.map((product) => {
+          return {
+            _id: product._id,
+            name: product.proName,
+            price: product.price,
+            category: product.categoryId,
+            productImage: product.proImages,
+          };
+        }),
+      };
+      res.status(200).json(response);
+    })
+    .catch((error) => {
+      next(error);
+    });
+});
+
+// router.get("/user/getAllProducts", async (req, res) => {
+//   try {
+//     let filter = {
+//       price: {
+//         $lte: 9999999999,
+//         $gte: 0,
+//       },
+//     };
+
+//     if (!isNaN(req.query.max)) {
+//       filter.price["$lte"] = req.query.max;
+//     }
+//     if (req.query.categoryId) {
+//       filter.categoryId = req.query.categoryId;
+//     }
+//     if (!isNaN(req.query.min)) {
+//       filter.price["$gte"] = req.query.min;
+//     }
+
+//     console.log(req.query.min);
+//     console.log(filter);
+
+//     const products = [];
+//     let response = Product.find(filter).populate("categories");
+
+//     // response = {
+//     //   count: products.length,
+//     //   products: products.map({
+//     //     _id: product._id,
+//     //     name: product.proName,
+//     //     price: product.price,
+//     //     category: product.categoryId,
+//     //     productImage: product.proImages,
+//     //   }),
+//     // };
+//     res.send(response);
+//   } catch (e) {
+//     res.status(400).send(e);
+//   }
+// });
 
 router.get("/user/:id", async (req, res) => {
   try {

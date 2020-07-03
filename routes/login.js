@@ -45,7 +45,11 @@ router.get("/show", auth, async (req, res) => {
     if (getOtp != user.otp || Date.now() - user.expiredTime > 1000 * 60 * 60)
       return res.status(400).send({ Error: "Invalid OTP provided" });
 
-    res.send({ Succes: ` ${user.firstName} , you are logged in successfully` });
+    res.send({
+      Succes: ` ${user.firstName} , you are logged in successfully`,
+      token: req.header("token"),
+      otp: req.header("otp"),
+    });
   } catch (e) {
     res.status(402).send(e);
     console.log(e);
